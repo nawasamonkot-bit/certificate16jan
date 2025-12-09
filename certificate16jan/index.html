@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>สร้างเกียรติบัตรออนไลน์</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h2>กรอกชื่อเพื่อสร้างเกียรติบัตร</h2>
+
+<input type="text" id="nameInput" placeholder="ชื่อ - นามสกุล">
+<button onclick="generateCert()">สร้างเกียรติบัตร</button>
+
+<div id="certPreview" style="display:none; margin-top:20px;">
+  <h3>ตัวอย่างเกียรติบัตร</h3>
+  <canvas id="certCanvas" width="1000" height="700"></canvas><br>
+  <button onclick="downloadCert()">ดาวน์โหลดเกียรติบัตร</button>
+</div>
+
+<!-- ปุ่ม Admin ซ่อน -->
+<a id="adminBtn" href="admin.html?admin=1" style="display:none;">
+  🔐 Admin
+</a>
+
+<script src="script.js"></script>
+
+<script>
+// แสดงปุ่ม admin เมื่อมี ?admin=1
+const adminMode = new URLSearchParams(location.search).get("admin") === "1";
+if (adminMode) {
+  document.getElementById("adminBtn").style.display = "inline-block";
+}
+</script>
+
+</body>
+</html>
