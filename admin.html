@@ -10,23 +10,14 @@
 <h2>แผงควบคุมแอดมิน</h2>
 
 <button onclick="downloadExcel()">📥 ดาวน์โหลดข้อมูล</button>
-<button onclick="resetNumber()">🔄 รีเซ็ตเลขลำดับ</button>
+<button onclick="resetNumberOnly()">🔄 รีเซ็ตเลขลำดับ</button>
+<button onclick="resetAll()">🗑️ ล้างข้อมูลทั้งหมด</button>
 
-<script>
-function downloadExcel() {
-  window.location.href = "data.xlsx";
-}
-
-function resetNumber() {
-  localStorage.setItem("certNumber", "1");
-  alert("รีเซ็ตเลขแล้ว!");
-}
-</script>
-  <!-- โหลด XLSX สำหรับสร้างไฟล์ Excel -->
+<!-- โหลด XLSX สำหรับสร้างไฟล์ Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<!-- โหลดโค้ดของเว็บ (script.js) -->
-<script src="script.js"></script>
+<!-- โหลดโค้ดหลัก -->
+<script src="script.js"></script>   <!-- หรือ ../script.js ถ้าอยู่ในโฟลเดอร์ -->
 
 </body>
 </html>
