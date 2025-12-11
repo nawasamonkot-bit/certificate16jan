@@ -7,28 +7,21 @@
 </head>
 <body>
 
-<h2>Admin Panel</h2>
+<h2>แผงควบคุมแอดมิน</h2>
 
-<button onclick="downloadExcel()">ดาวน์โหลด Excel (ข้อมูลผู้เข้าร่วม)</button>
-<br><br>
-
-<button onclick="resetNumberOnly()" style="background:red;color:white;">
-รีเซ็ตเฉพาะเลขรัน (กลับไป 001)
-</button>
-
-<script src="script.js"></script>
+<button onclick="downloadExcel()">📥 ดาวน์โหลดข้อมูล</button>
+<button onclick="resetNumber()">🔄 รีเซ็ตเลขลำดับ</button>
 
 <script>
-  // ป้องกันบุคคลทั่วไปเข้า admin.html
-  const isAdmin = new URLSearchParams(location.search).get("admin") === "1";
-  if (!isAdmin) {
-    alert("ไม่อนุญาตให้เข้าถึงหน้านี้");
-    location.href = "index.html";
-  }
+function downloadExcel() {
+  window.location.href = "data.xlsx";
+}
+
+function resetNumber() {
+  localStorage.setItem("certNumber", "1");
+  alert("รีเซ็ตเลขแล้ว!");
+}
 </script>
 
 </body>
 </html>
-
-
-
