@@ -81,8 +81,12 @@ function downloadCert() {
 // Admin: ดาวน์โหลด Excel
 //-----------------------------------------------------------
 function downloadExcel() {
-  window.location.href = "admin/data.xlsx";
+    var wb = XLSX.utils.book_new();
+    var ws = XLSX.utils.json_to_sheet(dataFromSheet);
+    XLSX.utils.book_append_sheet(wb, ws, "Data");
+    XLSX.writeFile(wb, "data.xlsx");
 }
+
 
 //-----------------------------------------------------------
 // Admin: รีเซ็ตเฉพาะเลขรัน
@@ -95,3 +99,4 @@ function resetNumberOnly() {
 
   alert("รีเซ็ตเลขรันเรียบร้อย! เลขต่อไปคือ 001");
 }
+
