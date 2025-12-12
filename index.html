@@ -1,42 +1,57 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>สร้างเกียรติบัตรออนไลน์</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สร้างเกียรติบัตร</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+  #container { background: #fff; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; }
+  input, button { padding: 10px; margin: 10px 0; width: 100%; }
+  img { max-width: 100%; margin-top: 20px; border-radius: 10px; }
+</style>
 </head>
 <body>
-
-<h2>กรอกชื่อเพื่อสร้างเกียรติบัตร</h2>
-
-<input type="text" id="nameInput" placeholder="ชื่อ - นามสกุล">
-<button onclick="generateCert()">สร้างเกียรติบัตร</button>
-
-<div id="certPreview" style="display:none; margin-top:20px;">
-  <h3>ตัวอย่างเกียรติบัตร</h3>
-  <canvas id="certCanvas" width="1000" height="700"></canvas><br>
-  <button onclick="downloadCert()">ดาวน์โหลดเกียรติบัตร</button>
+<div id="container">
+  <h2>สร้างเกียรติบัตร</h2>
+  <input type="text" id="name" placeholder="กรอกชื่อของคุณ" />
+  <button onclick="generateCerti()">สร้างเกียรติบัตร</button>
+  <img id="certificate" src="certificate.png" alt="เกียรติบัตร" />
 </div>
 
-<!-- ปุ่ม Admin ซ่อน -->
-
- <a id="adminBtn" href="admin.html?admin=1" style="display:none;"> 🔐 Admin </a>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-<script src="script.js"></script>
-
 <script>
-// แสดงปุ่ม admin เมื่อมี ?admin=1
-const adminMode = new URLSearchParams(location.search).get("admin") === "1";
-if (adminMode) {
-  document.getElementById("adminBtn").style.display = "inline-block";
+async function generateCerti() {
+  const name = document.getElementById("name").value.trim();
+  if (!name) {
+    alert("กรุณากรอกชื่อ");
+    return;
+  }
+
+  // ดึง IP ของผู้ใช้งาน
+  const ipData = await fetch('https://api.ipify.org?format=json').then(r => r.json());
+
+  const data = {
+    name: name,
+    device: navigator.platform,
+    userAgent: navigator.userAgent,
+    ip: ipData.ip
+  };
+
+  try {
+    const response = await fetch("https://certificate-worker.nawasamonkot.workers.dev/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    const result = await response.json();
+    console.log(result);
+    alert("บันทึกข้อมูลสำเร็จ!");
+  } catch (err) {
+    console.error(err);
+    alert("เกิดข้อผิดพลาด");
+  }
 }
 </script>
 
 </body>
 </html>
-
-
-
-
