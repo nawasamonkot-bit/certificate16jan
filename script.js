@@ -1,17 +1,8 @@
 //-----------------------------------------------------------
-// 🔧 ตั้งค่า GitHub Repo
-//-----------------------------------------------------------
-// ใส่ค่าตามที่คุณสร้างไว้ใน GitHub
-window.GITHUB_USER = "nawasamonkot-bit";   // ชื่อ user คุณ
-window.GITHUB_REPO = "certificate16jan";  // repo ใหม่สำหรับเก็บข้อมูล
-window.GITHUB_TOKEN = "certificate16jan";  // ใส่ token ที่คุณสร้าง
-
-//-----------------------------------------------------------
-// 📌 โหลดเลขรันสุดท้ายจาก LocalStorage (ใช้แค่บนเครื่องหนึ่ง แต่ GitHub คือของจริง)
+// 🎨 สร้างเลขรัน (ใช้ Worker/Sheet เป็นหลัก ถ้าไม่ต้องการ LocalStorage)
 //-----------------------------------------------------------
 let lastNumber = parseInt(localStorage.getItem("lastNumber") || "0");
 
-// ฟังก์ชันสร้างเลขรันแบบ 001, 002...
 function genNumber() {
   lastNumber++;
   localStorage.setItem("lastNumber", lastNumber);
@@ -19,33 +10,41 @@ function genNumber() {
 }
 
 //-----------------------------------------------------------
-// ✏ บันทึกข้อมูลลง GitHub Issues (ระบบเก็บข้อมูลกลาง)
+// 🔧 ส่งข้อมูลไป Cloudflare Worker
 //-----------------------------------------------------------
-async function saveToGitHub(name, number, dateTH) {
-  const url = `https://api.github.com/repos/${window.GITHUB_USER}/${window.GITHUB_REPO}/issues`;
+async function saveToWorker(name, number, dateTH) {
+  // URL Worker ของคุณ
+  const WORKER_URL = "https://certificate-worker.nawasamonkot.workers.dev/";
 
-  const body = {
-    title: `CERT-${number}`,
-    body: `ชื่อ: ${name}\nเลขที่: ${number}\nวันที่: ${dateTH}`
+  // ดึง IP ของผู้ใช้งาน
+  const ipData = await fetch('https://api.ipify.org?format=json').then(r => r.json());
+
+  const data = {
+    name: name,
+    number: number,
+    dateTH: dateTH,
+    device: navigator.platform,
+    userAgent: navigator.userAgent,
+    ip: ipData.ip
   };
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Authorization": `token ${window.GITHUB_TOKEN}`,
-      "Accept": "application/vnd.github+json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
 
-  if (!res.ok) {
-    alert("❌ บันทึกข้อมูลไป GitHub ไม่สำเร็จ");
+    const result = await res.json();
+    console.log("Worker response:", result);
+  } catch (err) {
+    console.error(err);
+    alert("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล");
   }
 }
 
 //-----------------------------------------------------------
-// 🎨 สร้างเกียรติบัตรจาก canvas
+// 🎨 สร้างเกียรติบัตร
 //-----------------------------------------------------------
 function generateCert() {
   const name = document.getElementById("nameInput").value.trim();
@@ -61,8 +60,8 @@ function generateCert() {
 
   drawCertificate(name, number, dateTH);
 
-  // บันทึกข้อมูลรวม (สำคัญ)
-  saveToGitHub(name, number, dateTH);
+  // ส่งข้อมูลไป Worker
+  saveToWorker(name, number, dateTH);
 }
 
 //-----------------------------------------------------------
@@ -103,56 +102,7 @@ function downloadCert() {
 }
 
 //-----------------------------------------------------------
-// 📥 ดึงข้อมูลทั้งหมดจาก GitHub Issues
-//-----------------------------------------------------------
-async function fetchAllDataFromGitHub() {
-  const url = `https://api.github.com/repos/${window.GITHUB_USER}/${window.GITHUB_REPO}/issues?per_page=100`;
-
-  const res = await fetch(url, {
-    headers: {
-      "Authorization": `token ${window.GITHUB_TOKEN}`,
-      "Accept": "application/vnd.github+json"
-    }
-  });
-
-  if (!res.ok) {
-    alert("❌ ดาวน์โหลดข้อมูลจาก GitHub ไม่สำเร็จ");
-    return [];
-  }
-
-  const issues = await res.json();
-
-  return issues.map(item => {
-    const lines = item.body.split("\n");
-
-    return {
-      number: item.title.replace("CERT-", "").trim(),
-      name: lines[0].replace("ชื่อ: ", "").trim(),
-      date: lines[2].replace("วันที่: ", "").trim()
-    };
-  });
-}
-
-//-----------------------------------------------------------
-// 📊 ดาวน์โหลด Excel แบบรวมจาก GitHub
-//-----------------------------------------------------------
-async function downloadExcelFromGitHub() {
-  const data = await fetchAllDataFromGitHub();
-
-  if (data.length === 0)
-    return alert("ยังไม่มีข้อมูลใน GitHub");
-
-  var wb = XLSX.utils.book_new();
-  var ws = XLSX.utils.json_to_sheet(data);
-  XLSX.utils.book_append_sheet(wb, ws, "CERT_DATA");
-
-  XLSX.writeFile(wb, "certificate-data.xlsx");
-
-  alert("ดาวน์โหลด Excel สำเร็จ!");
-}
-
-//-----------------------------------------------------------
-// 🗑 Admin: ล้างข้อมูล LocalStorage (ไม่กระทบ GitHub)
+// 🗑 Admin: ล้างข้อมูล LocalStorage (ไม่กระทบ Worker)
 //-----------------------------------------------------------
 function resetAll() {
   if (!confirm("ต้องการเคลียร์ข้อมูลบนอุปกรณ์นี้ไหม?")) return;
